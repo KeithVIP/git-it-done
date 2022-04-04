@@ -1,9 +1,23 @@
+var limitWarningEl = document.querySelector("#limit-warning");
+
 var issueContainerEl = document.querySelector("#issues-container");
+
+var displayWarning = function (repo) {
+    //add text to warning container
+    limitWarningEl.textContent = "To see more than 30 issues, visit ";
+    var linkEl = document.createElement("a");
+    linkEl.textContent = "See More Issues on GitHub.com";
+    linkEl.setAttribute("href", "https://github.com/" + repo + "/issues");
+    linkEl.setAttribute("target", "_blank");
+
+    // append to warning container
+    limitWarningEl.appendChild(linkEl);
+};
 
 var displayIssues = function (issues) {
     if (issues.length === 0) {
         issueContainerEl.textContent = "This repo has no open issues!";
-        return;
+        return
     }
     for (var i = 0; i < issues.length; i++) {
         // create a link element to take users to the issue on github
@@ -23,7 +37,7 @@ var displayIssues = function (issues) {
 
         // check if issue is an actual issue or a pull request
         if (issues[i].pull_request) {
-            typeEl.textContent = "(Pull request)";
+            typeEl.textContent = "(Pull request)"; issueContainerEl.appendChild(issueEl);
         } else {
             typeEl.textContent = "(Issue)";
         }
@@ -36,18 +50,17 @@ var displayIssues = function (issues) {
 
 var getRepoIssues = function (repo) {
     var apiUrl = "https://api.github.com/repos/" + repo + "/issues?direction=asc";
-    fetch(apiUrl).then(function (reponse) {
-        // request was sucessfull
-        if (reponse.ok) {
-            reponse.json().then(function (data) {
+    fetch(apiUrl).then(function (response) {
+        if (response.ok) {
+            response.json().then(function (data) {
                 displayIssues(data);
+                // check if api has paginated issues
+                if (response.headers.get("Link")) {
+                    displayWarning(repo);
+                }
             });
         }
-        else {
-            alert("There was a problem with your request!");
-        }
-    });
-    console.log(repo);
-};
+    })
+}
 
-getRepoIssues("facebook/react");
+    getRepoIssues("expressjs/express");
